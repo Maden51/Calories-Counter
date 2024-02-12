@@ -7,10 +7,14 @@ const output = document.getElementById('output');
 
 let isError = false;
 
+// убираем плюсы минусы и пустые места из строки с количеством кал.
+
 function cleanInputString(str) {
   const regex = /[+-\s]/g;
   return str.replace(regex, '');
 }
+
+// проверяем строку на соответствие 
 
 function isInvalidInput(str) {
   const regex = /\d+e\d+/i;
@@ -41,6 +45,8 @@ function addEntry() {
   targetInputContainer.insertAdjacentHTML("beforeend", HTMLString);
 }
 
+// считаем общие калории из всех инпутов
+
 function getCaloriesFromInputs(list) {
   let calories = 0;
   for (const item of list) {
@@ -70,6 +76,36 @@ function calculateCalories(e) {
   const snacksCalories = getCaloriesFromInputs(snacksNumberInputs);
   const exerciseCalories = getCaloriesFromInputs(exerciseNumberInputs);
   const budgetCalories = getCaloriesFromInputs([budgetNumberInput]);
+  if (isError) {
+    return;
+  }
+  const consumedCalories = 
+  breakfastCalories + 
+  lunchCalories + 
+  dinnerCalories +
+  snacksCalories;
+
+  const remainingCalories = budgetCalories - consumedCalories + exerciseCalories;
+  const surplusOrDeficit = remainingCalories < 0 ? "Surplus" : "Deficit";
+  output.innerHTML = `
+  <span class="${surplusOrDeficit.toLowerCase()}">${Math.abs(remainingCalories)} Calorie ${surplusOrDeficit}</span>
+  <hr/>
+  <p>${budgetCalories} Calories Budgeted</p>
+  <p>${consumedCalories} Calories Consumed</p>
+  <p>${exerciseCalories} Calories Burned</p>`;
+  output.classList.remove('hide');
+}
+
+function clearForm() {
+  const inputContainers = Array.from(document.querySelectorAll('.input-container'));
+  for (const container of inputContainers) {
+    container.innerHTML = '';
+  }
+  budgetNumberInput.value = '';
+  output.innerText = '';
+  output.classList.add('hide');
 }
 
 addEntryButton.addEventListener("click", addEntry);
+calorieCounter.addEventListener("submit", calculateCalories);
+clearButton.addEventListener("click", clearForm);
